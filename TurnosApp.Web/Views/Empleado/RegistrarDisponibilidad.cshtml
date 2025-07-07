@@ -1,0 +1,39 @@
+@{
+    ViewData["Title"] = "Registrar Disponibilidad";
+    var turnos = (List<TurnosApp.Core.Entities.Turno>)ViewBag.Turnos;
+}
+
+<h2>Registrar Disponibilidad Semanal</h2>
+
+<!-- Mostrar mensaje de advertencia si el turno ya fue seleccionado por varios empleados -->
+@if (TempData["Warning"] != null)
+{
+    <div class="alert alert-warning">
+        @TempData["Warning"]
+    </div>
+}
+
+<!-- Mostrar mensaje de éxito si la disponibilidad fue registrada correctamente -->
+@if (TempData["mensaje"] != null)
+{
+    <div style="color: green;">@TempData["mensaje"]</div>
+}
+
+<form asp-action="RegistrarDisponibilidad" method="post">
+    <label>Días disponibles:</label><br />
+    @foreach (var dia in new[] { "lunes", "martes", "miércoles", "jueves", "viernes" })
+    {
+        <label><input type="checkbox" name="dias" value="@dia" /> @dia</label><br />
+    }
+
+    <label>Turno preferido:</label>
+    <select name="turnoId" class="form-control">
+        @foreach (var turno in turnos)
+        {
+            <option value="@turno.Id">@turno.Nombre</option>
+        }
+    </select>
+
+    <br />
+    <button type="submit" class="btn btn-primary">Guardar</button>
+</form>

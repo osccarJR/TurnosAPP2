@@ -1,0 +1,27 @@
+@model List<TurnosApp.Core.Entities.LogAsignacion>
+
+@{
+    ViewData["Title"] = "Historial de Generaciones";
+}
+
+<h2>Historial de Generaciones de Turnos</h2>
+
+<table class="table table-bordered">
+    <thead class="thead-dark">
+        <tr>
+            <th>Fecha de ejecución</th>
+            <th>Usuario</th>
+            <th>Cantidad generada</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var log in Model)
+    {
+        <tr>
+            <td>@log.FechaEjecucion.ToString("dddd dd/MM/yyyy HH:mm")</td>
+            <td>@log.Usuario</td>
+            <td>@log.CantidadAsignaciones</td>
+        </tr>
+    }
+    </tbody>
+</table>

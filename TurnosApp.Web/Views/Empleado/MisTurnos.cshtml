@@ -1,0 +1,57 @@
+@model List<TurnosApp.Core.Entities.TurnoAsignado>
+
+@{
+    ViewData["Title"] = "Mis Turnos Asignados";
+}
+
+<h2>Mis Turnos de la Semana (@ViewBag.SemanaInicio)</h2>
+
+@if (Model.Count == 0)
+{
+    <div class="alert alert-warning">No tienes turnos asignados esta semana.</div>
+}
+else
+{
+    <p>Total de turnos: <strong>@ViewBag.TotalTurnos</strong> / 5</p>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Turno</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var turno in Model)
+            {
+                <tr>
+                    <td>@turno.Fecha.ToString("dddd dd/MM/yyyy")</td>
+                    <td>@turno.Turno.Nombre</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h4>Resumen por día</h4>
+    <table class="table table-sm table-striped">
+        <thead><tr><th>Día</th><th>Turnos</th></tr></thead>
+        <tbody>
+            @if (ViewBag.DiasAsignados != null)
+            {
+                foreach (var item in (Dictionary<DayOfWeek, int>)ViewBag.DiasAsignados)
+                {
+                    <tr>
+                        <td>@item.Key</td>
+                        <td>@item.Value</td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="2">No hay resumen de turnos por día disponible.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

@@ -1,0 +1,31 @@
+@model List<TurnosApp.Core.Entities.Disponibilidad>
+@{
+    ViewData["Title"] = "Mi Disponibilidad";
+}
+
+<h3>@ViewBag.NombreEmpleado - Disponibilidad Registrada</h3>
+
+@if (Model.Count == 0)
+{
+    <p>No has registrado disponibilidad aún.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Día</th>
+                <th>Turno</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.DiaSemana</td>
+                    <td>@item.Turno.Nombre</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

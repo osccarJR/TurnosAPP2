@@ -1,0 +1,14 @@
+bin/
+obj/
+.vs/
+*.user
+*.db
+*.suo
+*.swp
+.DS_Store
+Thumbs.db
+.idea/
+*.log
+*.sqlite
+*.mdf
+*.vscode

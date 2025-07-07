@@ -1,0 +1,48 @@
+@model List<TurnosApp.Core.ViewModels.ReporteEmpleadoTurnosViewModel>
+
+@{
+    ViewData["Title"] = "Reporte de Turnos por Empleado";
+}
+
+<h2>Reporte de Turnos por Empleado</h2>
+
+<form method="get" class="row g-3 mb-4">
+    <div class="col-md-4">
+        <label>Fecha Inicio:</label>
+        <input type="date" name="fechaInicio" class="form-control" value="@ViewBag.FechaInicio" />
+    </div>
+    <div class="col-md-4">
+        <label>Fecha Fin:</label>
+        <input type="date" name="fechaFin" class="form-control" value="@ViewBag.FechaFin" />
+    </div>
+    <div class="col-md-4 align-self-end">
+        <button type="submit" class="btn btn-primary">Generar Reporte</button>
+    </div>
+</form>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-warning">No hay asignaciones en el rango seleccionado.</div>
+}
+else
+{
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Empleado</th>
+                <th>Correo</th>
+                <th>Total de Turnos</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Nombre</td>
+                    <td>@item.Correo</td>
+                    <td>@item.CantidadTurnos</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

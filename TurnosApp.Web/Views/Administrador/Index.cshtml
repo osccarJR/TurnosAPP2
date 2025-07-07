@@ -1,0 +1,44 @@
+@{
+    ViewData["Title"] = "Panel del Administrador";
+}
+
+<h2>Panel del Administrador</h2>
+
+<!-- Mostrar alerta de error si no hay disponibilidades registradas -->
+@if (TempData["mensajeError"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["mensajeError"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<!-- Mostrar alerta de éxito si hay un mensaje -->
+@if (TempData["mensaje"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["mensaje"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<!-- Botón para generar asignaciones sin restricción del día -->
+<form asp-action="GenerarAsignaciones" method="post">
+    <button type="submit" class="btn btn-success">Generar asignaciones semanales</button>
+</form>
+
+<!-- Botón para ver turnos asignados -->
+<a class="btn btn-outline-info mt-2" asp-action="VerAsignaciones">Ver turnos asignados</a>
+
+<!-- Botón para ver historial de generación -->
+<a class="btn btn-outline-dark mt-2" asp-action="VerLogs">Ver historial de generación</a>
+
+<!-- Botón para reiniciar la semana -->
+<form method="post" asp-action="ReiniciarSemana" class="mt-2">
+    <button type="submit" class="btn btn-danger">
+        🔄 Reiniciar semana
+    </button>
+</form>
+
+<!-- ✅ NUEVO: Botón para ver el reporte de turnos por empleado -->
+<a class="btn btn-outline-primary mt-2" asp-action="ReporteTurnos">📊 Reporte de turnos por empleado</a>

@@ -1,0 +1,22 @@
+@{
+    ViewData["Title"] = "Panel del Empleado";
+    var nombre = Context.Session.GetString("Nombre");
+}
+
+<h2>Bienvenido, @nombre</h2>
+
+@if (TempData["mensaje"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["mensaje"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<p>¿Qué deseas hacer hoy?</p>
+
+<a class="btn btn-primary" href="@Url.Action("MisTurnos", "Empleado")">Ver mis turnos asignados</a>
+<a class="btn btn-secondary" href="@Url.Action("RegistrarDisponibilidad", "Empleado")">Registrar disponibilidad semanal</a>
+
+<!-- Enlace para ver la disponibilidad actual -->
+<p><a class="btn btn-info" href="@Url.Action("VerDisponibilidad", "Empleado")">Ver mi disponibilidad actual</a></p>

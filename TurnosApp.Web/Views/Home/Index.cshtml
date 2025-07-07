@@ -1,0 +1,30 @@
+﻿@{
+    ViewData["Title"] = "Bienvenido";
+}
+
+<div class="container mt-5">
+    <h1 class="display-4 text-center">Bienvenido a TurnosApp</h1>
+    <p class="lead text-center">Sistema de gestión y asignación automática de turnos laborales.</p>
+
+    <div class="text-center mt-4">
+        <a class="btn btn-primary btn-lg" asp-controller="Account" asp-action="Login">Iniciar sesión</a>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-md-6">
+            <h4>¿Qué puedes hacer como empleado?</h4>
+            <ul>
+                <li>Registrar tu disponibilidad semanal</li>
+                <li>Consultar tus turnos asignados</li>
+            </ul>
+        </div>
+        <div class="col-md-6">
+            <h4>¿Qué puedes hacer como administrador?</h4>
+            <ul>
+                <li>Generar asignaciones automáticas</li>
+                <li>Ver y eliminar turnos asignados</li>
+                <li>Consultar estadísticas y logs del sistema</li>
+            </ul>
+        </div>
+    </div>
+</div>
