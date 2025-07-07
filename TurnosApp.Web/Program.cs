@@ -4,8 +4,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore;
-using TurnosApp.Infrastructure.Data; // Asegúrate de tener este using
-using TurnosApp.Web.Seeders; // Agregar este using para acceder a DbSeeder
+using TurnosApp.Infrastructure.Data; // Para ApplicationDbContext
+using TurnosApp.Web.Seeders;        // Para DbSeeder
+using TurnosApp.Core.Services;      // Para IAsignacionService
+using TurnosApp.Infrastructure.Services; // Para AsignacionService
+using System.Text.Json.Serialization; // Para ReferenceHandler
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,8 +16,16 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Agregar controladores con vistas
-builder.Services.AddControllersWithViews();
+// Agregar servicios de la aplicación
+builder.Services.AddScoped<IAsignacionService, AsignacionService>();
+
+// Agregar controladores con vistas y configurar serialización JSON
+builder.Services.AddControllersWithViews()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.WriteIndented = true;
+    });
 
 // Habilitar sesiones
 builder.Services.AddSession(options =>
@@ -22,6 +33,18 @@ builder.Services.AddSession(options =>
     options.IdleTimeout = TimeSpan.FromHours(1); // Tiempo de espera antes de que expire la sesión
     options.Cookie.HttpOnly = true;  // Solo accesible por el servidor
     options.Cookie.IsEssential = true; // Necesario para cumplir con políticas de privacidad
+});
+
+// Configurar CORS para permitir solicitudes desde el frontend (React)
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:5173")  // URL de tu frontend React
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
 });
 
 var app = builder.Build();
@@ -42,17 +65,19 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
 
 // Habilitar el uso de sesiones
-app.UseSession(); // Aquí activamos el middleware de sesiones
+app.UseSession();
+
+// Habilitar CORS antes de la autorización
+app.UseCors("AllowFrontend"); // 👈 Esto va aquí
 
 app.UseAuthorization();
 
+// Configurar rutas
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
-

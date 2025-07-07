@@ -11,10 +11,12 @@ namespace TurnosApp.Web.Controllers
     public class AdministradorController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IAsignacionService _asignacionService;
 
-        public AdministradorController(ApplicationDbContext context)
+        public AdministradorController(ApplicationDbContext context, IAsignacionService asignacionService)
         {
             _context = context;
+            _asignacionService = asignacionService;
         }
 
         public IActionResult Index()
@@ -30,74 +32,7 @@ namespace TurnosApp.Web.Controllers
             if (HttpContext.Session.GetString("Rol") != "Administrador")
                 return RedirectToAction("Login", "Account");
 
-            var hoy = DateTime.Now.Date;
-            var inicioSemana = hoy.AddDays(-(int)hoy.DayOfWeek + (int)DayOfWeek.Monday);
-
-            var yaGenerado = await _context.LogsAsignaciones
-                .AnyAsync(log => log.FechaEjecucion >= inicioSemana);
-
-            if (yaGenerado)
-            {
-                TempData["mensajeError"] = "Ya se han generado turnos esta semana.";
-                return RedirectToAction("Index");
-            }
-
-            var semanaInicio = ObtenerLunesDeEstaSemana();
-            var semanaFin = semanaInicio.AddDays(6);
-
-            var empleados = await _context.Empleados
-                .Include(e => e.Disponibilidades)
-                .ToListAsync();
-
-            var turnos = await _context.Turnos.ToListAsync();
-            var dias = new[] { "Lunes", "Martes", "Miércoles", "Jueves", "Viernes" };
-
-            int generadosAutomaticamente = 0;
-
-            foreach (var emp in empleados.Where(e => e.Disponibilidades == null || !e.Disponibilidades.Any()))
-            {
-                var random = new Random();
-
-                foreach (var dia in dias)
-                {
-                    var turnoRandom = turnos[random.Next(turnos.Count)];
-                    _context.Disponibilidades.Add(new Disponibilidad
-                    {
-                        EmpleadoId = emp.Id,
-                        DiaSemana = dia,
-                        TurnoId = turnoRandom.Id
-                    });
-                }
-
-                generadosAutomaticamente++;
-            }
-
-            await _context.SaveChangesAsync();
-
-            var existentes = await _context.TurnosAsignados
-                .Where(t => t.Fecha >= semanaInicio && t.Fecha <= semanaFin)
-                .ToListAsync();
-
-            var asignador = new AsignadorTurnosService();
-            var nuevas = asignador.GenerarAsignaciones(empleados, turnos, semanaInicio, existentes);
-
-            _context.TurnosAsignados.AddRange(nuevas);
-
-            _context.LogsAsignaciones.Add(new LogAsignacion
-            {
-                FechaEjecucion = DateTime.Now,
-                Usuario = HttpContext.Session.GetString("Nombre") ?? "Desconocido",
-                CantidadAsignaciones = nuevas.Count
-            });
-
-            await _context.SaveChangesAsync();
-
-            TempData["mensaje"] = $"Se generaron {nuevas.Count} nuevas asignaciones.";
-
-            if (generadosAutomaticamente > 0)
-            {
-                TempData["mensaje"] += $" {generadosAutomaticamente} empleado(s) no registraron su disponibilidad, por lo que se les generó aleatoriamente.";
-            }
+            await _asignacionService.GenerarAsignacionesAsync();
 
             return RedirectToAction("Index");
         }
@@ -158,13 +93,8 @@ namespace TurnosApp.Web.Controllers
             if (HttpContext.Session.GetString("Rol") != "Administrador")
                 return RedirectToAction("Login", "Account");
 
-            var asignacion = await _context.TurnosAsignados.FindAsync(id);
-
-            if (asignacion != null)
-            {
-                _context.TurnosAsignados.Remove(asignacion);
-                await _context.SaveChangesAsync();
-            }
+            // Refactorización: Llamar al servicio para eliminar la asignación
+            await _asignacionService.EliminarAsignacionAsync(id);
 
             return RedirectToAction("VerAsignaciones");
         }
@@ -182,27 +112,13 @@ namespace TurnosApp.Web.Controllers
         }
 
         [HttpPost]
-        public IActionResult ReiniciarSemana()
+        public async Task<IActionResult> ReiniciarSemana()
         {
-            var inicioSemana = DateTime.Now.StartOfWeek(DayOfWeek.Monday);
-            var finSemana = inicioSemana.AddDays(7);
+            if (HttpContext.Session.GetString("Rol") != "Administrador")
+                return RedirectToAction("Login", "Account");
 
-            var asignacionesSemana = _context.TurnosAsignados
-                .Where(t => t.Fecha >= inicioSemana && t.Fecha < finSemana)
-                .ToList();
-            _context.TurnosAsignados.RemoveRange(asignacionesSemana);
+            await _asignacionService.ReiniciarSemanaAsync();
 
-            var logsSemana = _context.LogsAsignaciones
-                .Where(l => l.FechaEjecucion >= inicioSemana && l.FechaEjecucion < finSemana)
-                .ToList();
-            _context.LogsAsignaciones.RemoveRange(logsSemana);
-
-            var disponibilidades = _context.Disponibilidades.ToList();
-            _context.Disponibilidades.RemoveRange(disponibilidades);
-
-            _context.SaveChanges();
-
-            TempData["mensaje"] = "Se reinició correctamente la semana. Las disponibilidades fueron eliminadas, y los empleados deberán volver a registrarlas.";
             return RedirectToAction("Index");
         }
 
